@@ -1,0 +1,32 @@
+.deploy:
+  image:
+    name: alpine/k8s:1.23.15
+    entrypoint: [""]
+  stage: deploy
+  tags:
+    - k8s01
+  variables:
+    RELEASE_NAME: name
+    NAMESPACE: pipeline
+    MANIFEST_PATH: ./K8s-manifest
+  before_script:
+    - echo "$KUBEFILE" | base64 -d > "$(pwd)/kubeconfig"
+    - export KUBECONFIG="$(pwd)/kubeconfig"
+    - chmod 600 "$(pwd)/kubeconfig"
+  script:
+      kubectl apply -n $NAMESPACE -f $MANIFEST_PATH
+
+deploy-dev:
+  extends: .deploy
+  environment: dev
+  resource_group: dev
+  variables:
+    RELEASE_NAME: nginx-front
+    NAMESPACE: nginx-front-dev
+    KUBEFILE: $KUBEFILE
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+      when: always
+    - when: manual

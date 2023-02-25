@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-name
+  labels:
+    app: app-name
+spec:
+ type: ClusterIP
+ ports:
+   - port: 9002
+     protocol: TCP
+     name: http
+     targetPort: 9002
+ selector:
+   app: app-name
